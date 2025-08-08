@@ -17,10 +17,13 @@ jobs:
           host: ${{ secrets.EC2_HOST}} #접속할 서버 ip주소
           username: ${{secrets.EC2_USERNAME}} # 접속자 이름
           key: ${{ secrets.EC2_PRIVATE_KEY }} #key pair설정 - 이게 있어야만 ec2서버에 접속가능
+          envs: APPLICATION_PROPERTIES
           script_stop: true
           script: |
             cd /home/ubuntu/gitaction_spring
+            rm -rf src/main/resources/application.properties # 기존의 application.properties를 지운다. 
             git pull origin main
+            echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties #APPLICATION_PROPERTIES 에 설정된 값들을 읽어와 application.properties에 출력한다.
             ./gradlew clean build
             sudo fuser -k -n tcp 8080 || true  # 8080포트가 실행되어 있지 않으면 오류가 발생되므로 오류가 발생되도 계속 실행되도록 || true 를 설정한다.
             nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>& 1 # java가 실행될때 발생되는 로그들을 output.log파일에 저장해라.(리눅스 표준출력)
