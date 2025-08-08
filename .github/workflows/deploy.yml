@@ -10,6 +10,8 @@ jobs:
     steps: # workflow가 해야 할 작업을 순서대로 적어준다.
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          APPLICATION_PROPERTIES: ${{ secrets.APPLICATION_PROPERTIES}}
         with:
           #ssh로 접속할때 설정정보값들 지정 -> github -> 상단 Settings ->좌측 actions메뉴 -> Secrets and variables->Actions->Secrets탭에서 해당 Secrets값들을 설정한다.
           host: ${{ secrets.EC2_HOST}} #접속할 서버 ip주소
