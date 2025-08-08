@@ -22,8 +22,22 @@ jobs:
             cd /home/ubuntu/gitaction_spring
             rm -rf src/main/resources/application.properties # 기존의 application.properties를 지운다. 
             git pull origin main
-            echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties #APPLICATION_PROPERTIES 에 설정된 값들을 읽어와 application.properties에 출력한다.
+            #echo "$APPLICATION_PROPERTIES" > src/main/resources/application.properties #APPLICATION_PROPERTIES 에 설정된 값들을 읽어와 application.properties에 출력한다.
+            chmod +x ./gradlew
             ./gradlew clean build
-            sudo fuser -k -n tcp 8080 || true  # 8080포트가 실행되어 있지 않으면 오류가 발생되므로 오류가 발생되도 계속 실행되도록 || true 를 설정한다.
-            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>& 1 # java가 실행될때 발생되는 로그들을 output.log파일에 저장해라.(리눅스 표준출력)
+            #sudo fuser -k -n tcp 8080 || true  # 8080포트가 실행되어 있지 않으면 오류가 발생되므로 오류가 발생되도 계속 실행되도록 || true 를 설정한다.
+            PID=$(lsof -t -i:8080) && kill -9 $PID || true # 위 문장 대신으로 pid로 kill하는것 더 권장
+            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>&1 & # java가 실행될때 발생되는 로그들을 output.log파일에 저장해라.(리눅스 표준출력)
+#            2>&1
+#            **표준 에러(stderr)**를 **표준 출력(stdout)**으로 합침
+#
+#            즉, 에러 메시지도 output.log에 같이 저장됨
+#
+#            2 = 표준 에러, 1 = 표준 출력, 2>&1 = "에러 출력을 표준 출력으로 보내라"
+#                    &
+#                    마지막에 붙으면 백그라운드 실행
+#
+#                    명령이 실행된 뒤 터미널 제어권이 즉시 돌아오고, 프로세스는 뒤에서 계속 실행됨
+#
+#                    nohup과 같이 쓰면, 백그라운드 + SSH 종료 후에도 계속 실행이라는 조합이 완성됨
             
