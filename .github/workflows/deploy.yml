@@ -1,0 +1,25 @@
+name: Deploy EC2
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+  Deploy: #job id
+    runs-on: ubuntu-latest
+    steps: # workflow가 해야 할 작업을 순서대로 적어준다.
+      - name: SSH로 EC2에 접속하기
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          #ssh로 접속할때 설정정보값들 지정 -> github -> 상단 Settings ->좌측 actions메뉴 -> Secrets and variables->Actions->Secrets탭에서 해당 Secrets값들을 설정한다.
+          host: ${{ secrets.EC2_HOST}} #접속할 서버 ip주소
+          username: ${{secrets.EC2_USERNAME}} # 접속자 이름
+          key: ${{ secrets.EC2_PRIVATE_KEY }} #key pair설정 - 이게 있어야만 ec2서버에 접속가능
+          script_stop: true
+          script: |
+            cd /home/ubuntu/gitaction_spring
+            git pull origin main
+            ./gradlew clean build
+            sudo fuser -k -n tcp 8080 || true  # 8080포트가 실행되어 있지 않으면 오류가 발생되므로 오류가 발생되도 계속 실행되도록 || true 를 설정한다.
+            nohup java -jar build/libs/*SNAPSHOT.jar > ./output.log 2>& 1 # java가 실행될때 발생되는 로그들을 output.log파일에 저장해라.(리눅스 표준출력)
+            
